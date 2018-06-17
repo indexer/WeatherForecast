@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
@@ -22,25 +21,32 @@ import androidx.work.Data
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
+import com.brouding.simpledialog.SimpleDialog
+import com.indexer.ottohub.rest.RestClient
+import com.indexer.ottohub.rest.enqueue
+import com.indexer.weather.adapter.SpacesItemDecoration
 import com.indexer.weather.adapter.WeatherAdapter
 import com.indexer.weather.base.BaseViewHolder
 import com.indexer.weather.base.Config
 import com.indexer.weather.base.Utils
 import com.indexer.weather.database.AppDatabase
 import com.indexer.weather.job.FetchApiWorker
+import com.indexer.weather.listener.ConnectivityReceiver
 import com.indexer.weather.model.SaveWeather
 import com.indexer.weather.viewmodel.HomeGridViewModel
-import kotlinx.android.synthetic.main.activity_home.*
-import java.util.Calendar
-import java.util.concurrent.TimeUnit.MINUTES
-import com.brouding.simpledialog.SimpleDialog
-import com.indexer.ottohub.rest.RestClient
-import com.indexer.ottohub.rest.enqueue
-import com.indexer.weather.adapter.SpacesItemDecoration
-import com.indexer.weather.listener.ConnectivityReceiver
 import com.indexer.weather.viewmodel.LocationData
 import com.sembozdemir.permissionskt.askPermissions
-import kotlinx.android.synthetic.main.activity_main.main_views
+import kotlinx.android.synthetic.main.activity_home.add_country
+import kotlinx.android.synthetic.main.activity_home.country
+import kotlinx.android.synthetic.main.activity_home.country_weather
+import kotlinx.android.synthetic.main.activity_home.forecast
+import kotlinx.android.synthetic.main.activity_home.main_view
+import kotlinx.android.synthetic.main.activity_home.mywidget
+import kotlinx.android.synthetic.main.activity_home.temp_condition
+import kotlinx.android.synthetic.main.activity_home.weather_condition
+import kotlinx.android.synthetic.main.activity_home.weather_icon
+import java.util.Calendar
+import java.util.concurrent.TimeUnit.MINUTES
 
 class HomeActivity : AppCompatActivity(),
     BaseViewHolder.OnItemClickListener,

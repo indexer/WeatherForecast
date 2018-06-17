@@ -29,7 +29,7 @@ class RestClient private constructor() {
         .cache(null)
         .apply {
           addInterceptor(headersInterceptor())
-          addInterceptor(HttpLoggingInterceptor().setLevel(Level.BODY))
+          addInterceptor(HttpLoggingInterceptor().setLevel(Level.NONE))
           connectTimeout(10, TimeUnit.SECONDS)
           followRedirects(true)
           followSslRedirects(true)
