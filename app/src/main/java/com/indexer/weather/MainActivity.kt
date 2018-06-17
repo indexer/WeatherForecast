@@ -1,29 +1,23 @@
 package com.indexer.weather
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.graphics.Color
-import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.util.Log
 import android.view.WindowManager
-import com.indexer.ottohub.rest.RestClient
-import com.indexer.ottohub.rest.enqueue
 import com.indexer.weather.adapter.CountryAdapter
 import com.indexer.weather.base.BaseViewHolder
 import com.indexer.weather.base.Config
 import com.indexer.weather.base.Utils
 import com.indexer.weather.database.AppDatabase
 import com.indexer.weather.utils.onChange
-import com.indexer.weather.viewmodel.LocationData
-import com.sembozdemir.permissionskt.askPermissions
-import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
+import kotlinx.android.synthetic.main.activity_main.country_input
+import kotlinx.android.synthetic.main.activity_main.country_list
+import kotlinx.android.synthetic.main.activity_main.main_views
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
 

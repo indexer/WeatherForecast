@@ -9,13 +9,16 @@ import com.indexer.ottohub.rest.RestClient
 import com.indexer.ottohub.rest.enqueue
 import com.indexer.weather.database.AppDatabase
 import com.indexer.weather.model.SaveWeather
+import com.indexer.weather.utils.ioThread
 import java.util.Date
 
 class HomeGridViewModel(application: Application) : AndroidViewModel(application) {
   private lateinit var appDatabase: AppDatabase
 
   private fun saveItem(saveWeather: SaveWeather) {
-    appDatabase.weatherDao.insertWeather(saveWeather)
+    ioThread {
+      appDatabase.weatherDao.insertWeather(saveWeather)
+    }
   }
 
   fun getSaveWeather(appDatabase: AppDatabase): LiveData<MutableList<SaveWeather>> {
@@ -24,7 +27,9 @@ class HomeGridViewModel(application: Application) : AndroidViewModel(application
   }
 
   fun deleteWeather(saveWeather: SaveWeather?) {
-    appDatabase.weatherDao.deleteSaveWeather(saveWeather)
+    ioThread {
+      appDatabase.weatherDao.deleteSaveWeather(saveWeather)
+    }
   }
 
   fun saveWeatherInformation(

@@ -38,7 +38,6 @@ class EntityReadWriteTest {
   fun closeDb() {
     mDb!!.close()
   }
-
   @Test
   @Throws(Exception::class)
   fun writeUserAndReadInList() {
@@ -51,7 +50,7 @@ class EntityReadWriteTest {
     val mList = ArrayList<SaveWeather>()
     mList.add(weather)
     mUserDao!!.insertWeathers(mList)
-    val mProduct = mUserDao!!.getAllWeatherById(10)
+    val mProduct = mUserDao!!.getAllWeatherById(1)
     assertThat(1, equalTo(mProduct.id))
     mUserDao!!.deleteSaveWeather(weather)
   }
