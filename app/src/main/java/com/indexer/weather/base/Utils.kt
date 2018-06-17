@@ -25,8 +25,8 @@ object Utils {
 
   fun parseDate(date: String): Date {
 
-    val inputFormat = "HH:mm"
-    val inputParser = SimpleDateFormat(inputFormat, Locale.US)
+    val inputFormat = "HH:mm a"
+    val inputParser = SimpleDateFormat(inputFormat, Locale.getDefault())
     return try {
       inputParser.parse(date)
     } catch (e: java.text.ParseException) {

@@ -4,11 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.location.Location
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
@@ -33,16 +37,54 @@ import com.brouding.simpledialog.SimpleDialog
 import com.indexer.ottohub.rest.RestClient
 import com.indexer.ottohub.rest.enqueue
 import com.indexer.weather.adapter.SpacesItemDecoration
+import com.indexer.weather.listener.ConnectivityReceiver
 import com.indexer.weather.viewmodel.LocationData
 import com.sembozdemir.permissionskt.askPermissions
 
-class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
+class HomeActivity : AppCompatActivity(),
+    BaseViewHolder.OnItemClickListener,
+    ConnectivityReceiver.ConnectivityReceiverListener {
+
   private lateinit var appDatabase: AppDatabase
   private var saveWeather: SaveWeather? = null
   private lateinit var weatherAdapter: WeatherAdapter
   private lateinit var gridLayoutManager: LinearLayoutManager
   private lateinit var homeGridViewModel: HomeGridViewModel
   private lateinit var locationData: LocationData
+  private var mSnackBar: Snackbar? = null
+
+  override fun onNetworkConnectionChanged(isConnected: Boolean) {
+    showMessage(isConnected)
+  }
+
+  private fun showMessage(isConnected: Boolean) {
+    if (!isConnected) {
+      val messageToUser = "You are offline now."
+      mSnackBar =
+          Snackbar.make(findViewById(R.id.main_view), messageToUser, Snackbar.LENGTH_LONG)
+      mSnackBar!!.duration = Snackbar.LENGTH_INDEFINITE
+      mSnackBar!!.show()
+      weather_icon.visibility = View.GONE
+    } else {
+      val countryCode = intent.getStringExtra(Config.country)
+
+      val list = appDatabase.weatherDao.getAllSaveWeather()
+      if (list.value == null && countryCode == null) {
+        val intent = Intent(this@HomeActivity, MainActivity::class.java)
+        startActivity(intent)
+        this.finish()
+      } else {
+        if (countryCode != null) {
+          homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
+        }
+      }
+      changeGridData()
+      country_weather.layoutManager = gridLayoutManager
+      country_weather.adapter = weatherAdapter
+      country_weather.addItemDecoration(SpacesItemDecoration(16))
+      queueNetWork()
+    }
+  }
 
   override fun onItemClick(position: Int) {
     saveWeather = weatherAdapter.getItem(position)
@@ -132,23 +174,11 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     gridLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     appDatabase = AppDatabase.getDatabase(this)
 
-    val countryCode = intent.getStringExtra(Config.country)
+    registerReceiver(
+        ConnectivityReceiver(),
+        IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+    )
 
-    val list = appDatabase.weatherDao.getAllSaveWeather()
-    if (list.value == null && countryCode == null) {
-      val intent = Intent(this@HomeActivity, MainActivity::class.java)
-      startActivity(intent)
-      this.finish()
-    } else {
-      if (countryCode != null) {
-        homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
-      }
-    }
-    changeGridData()
-    country_weather.layoutManager = gridLayoutManager
-    country_weather.adapter = weatherAdapter
-    country_weather.addItemDecoration(SpacesItemDecoration(16))
-    queueNetWork()
   }
 
   private fun dashBoardView(saveWeather: SaveWeather?) {
@@ -157,6 +187,12 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     weather_condition.text = saveWeather?.main
     temp_condition.text = Utils.formatTemperature(saveWeather?.temp)
     weather_icon.setImageResource(Utils.icon(saveWeather?.main))
+  }
+
+  override fun onResume() {
+    super.onResume()
+    ConnectivityReceiver.connectivityReceiverListener = this
+
   }
 
   private fun queueNetWork() {

@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.WindowManager
 import com.indexer.weather.adapter.CountryAdapter
 import com.indexer.weather.base.BaseViewHolder
@@ -76,9 +77,11 @@ class MainActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     val hour = now.get(Calendar.HOUR_OF_DAY) // Get hour in 24 hour format
     val minute = now.get(Calendar.MINUTE)
     val date = Utils.parseDate(hour.toString() + ":" + minute)
-    val dateCompare = Utils.parseDate("18:00")
+    val dateCompare = Utils.parseDate("18:00 PM")
+    val dateCompareTwo = Utils.parseDate("07:00 AM")
 
-    if (dateCompare.before(date)) {
+
+    if (date.after(dateCompareTwo) || date.before(dateCompare)) {
       main_views.setBackgroundColor(Color.parseColor("#06245F"))
       statusColor("#06245F")
     } else {
