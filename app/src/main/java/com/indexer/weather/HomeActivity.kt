@@ -1,14 +1,18 @@
 package com.indexer.weather
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.graphics.Color
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.LinearLayoutManager
+import android.view.View
 import android.view.WindowManager
 import androidx.work.Constraints
 import androidx.work.Data
@@ -27,22 +31,29 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.activity_main.main_views
 import java.util.Calendar
 import java.util.concurrent.TimeUnit.MINUTES
+import com.brouding.simpledialog.SimpleDialog
+import com.indexer.ottohub.rest.RestClient
+import com.indexer.ottohub.rest.enqueue
+import com.indexer.weather.viewmodel.LocationData
+import com.sembozdemir.permissionskt.askPermissions
 
 class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
   private lateinit var appDatabase: AppDatabase
   private var saveWeather: SaveWeather? = null
   private lateinit var weatherAdapter: WeatherAdapter
-  private lateinit var gridLayoutManager: GridLayoutManager
+  private lateinit var gridLayoutManager: LinearLayoutManager
   private lateinit var homeGridViewModel: HomeGridViewModel
+  private lateinit var locationData: LocationData
 
   override fun onItemClick(position: Int) {
     saveWeather = weatherAdapter.getItem(position)
-    dashBoradView(saveWeather)
+    dashBoardView(saveWeather)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_home)
+    locationData = LocationData(this)
 
     homeGridViewModel = ViewModelProviders.of(this)
         .get(HomeGridViewModel::class.java)
@@ -57,8 +68,22 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
 
     main_view.setOnLongClickListener {
       if (weatherAdapter.itemCount > 0) {
-        homeGridViewModel.deleteWeather(saveWeather)
-        changeGridData()
+
+        SimpleDialog.Builder(this)
+            .setTitle("Remove Country!", true)
+            .setContent(saveWeather?.country!!)
+            .onConfirm { _, _ ->
+              homeGridViewModel.deleteWeather(saveWeather)
+              changeGridData()
+            }
+            .onCancel { _, _ ->
+
+            }
+            .setBtnConfirmText("Delete")
+            .setBtnCancelText("Cancel")
+            .setBtnConfirmTextColor("#000000")
+            .show()
+
       }
       true
     }
@@ -67,9 +92,10 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
 
     val hour = now.get(Calendar.HOUR_OF_DAY) // Get hour in 24 hour format
     val minute = now.get(Calendar.MINUTE)
+    mywidget?.isSelected = true
 
     val date = Utils.parseDate(hour.toString() + ":" + minute)
-    val dateCompare = Utils.parseDate("18:00")
+    val dateCompare = Utils.parseDate("19:00")
 
     if (dateCompare.before(date)) {
       main_view.setBackgroundColor(Color.parseColor("#06245F"))
@@ -79,8 +105,32 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
       statusColor("#06CDFF")
     }
 
+    val locationObserver = Observer<Location> {
+      val weather = RestClient.getService()
+          .getWeatherForLocation(it?.latitude, it?.longitude)
+      weather.enqueue(success = {
+        var weatherInformation =
+          "Weather Station" + it.body()?.name + it.body()?.weather!![0].main + "Temperature : " + Utils.formatTemperature(
+              it.body()?.main?.temp
+          )
+        mywidget.text = weatherInformation
+      }, failure = {
+
+      })
+    }
+
+    askPermissions(Manifest.permission.ACCESS_FINE_LOCATION) {
+      onGranted {
+        locationData.observe(this@HomeActivity, locationObserver)
+      }
+      onDenied {
+        forecast.visibility = View.GONE
+        mywidget.visibility = View.GONE
+      }
+    }
+
     weatherAdapter = WeatherAdapter(this)
-    gridLayoutManager = GridLayoutManager(this, 3)
+    gridLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     appDatabase = AppDatabase.getDatabase(this)
     changeGridData()
     if (weatherAdapter.items?.size!! < 0) {
@@ -98,7 +148,7 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     queueNetWork()
   }
 
-  private fun dashBoradView(saveWeather: SaveWeather?) {
+  private fun dashBoardView(saveWeather: SaveWeather?) {
     this.saveWeather = saveWeather
     country.text = saveWeather?.country
     weather_condition.text = saveWeather?.main
@@ -127,8 +177,7 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
         .enqueue(recurringWork)
   }
 
-  @SuppressLint("ObsoleteSdkInt")
-  private fun statusColor(color: String) {
+  @SuppressLint("ObsoleteSdkInt") private fun statusColor(color: String) {
     if (Build.VERSION.SDK_INT >= 21) {
       val window = window
       window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
@@ -142,9 +191,9 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
         .observe(this, Observer {
           weatherAdapter.items = it
           if (weatherAdapter.items?.isNotEmpty()!!) {
-            dashBoradView(
-                weatherAdapter
-                    .getItem(weatherAdapter.itemCount - 1)
+            val lastIndex = weatherAdapter.itemCount - 1
+            dashBoardView(
+                weatherAdapter.getItem(lastIndex)
             )
           }
           weatherAdapter.notifyDataSetChanged()

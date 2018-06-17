@@ -3,7 +3,9 @@ package com.suthaw.restaurnat.rest
 import com.indexer.weather.base.Config
 import com.indexer.weather.model.ForecastCountryObject
 import com.indexer.weather.model.ForecastReturnObject
+import com.indexer.weather.model.LocationForecastObject
 import com.indexer.weather.model.MultipleCityReturnObject
+import com.indexer.weather.model.X
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -14,7 +16,7 @@ interface ApiService {
   fun getWeatherForLocation(
     @Query("lat") latitude: Double?,
     @Query("lon") longitude: Double?
-  ): Call<ForecastReturnObject>
+  ): Call<LocationForecastObject>
 
   @GET(Config.LOCATION_URL)
   fun getWeatherForCountry(@Query("q") countryCode: String?): Call<ForecastCountryObject>

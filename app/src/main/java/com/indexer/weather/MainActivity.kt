@@ -42,7 +42,6 @@ class MainActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     finish()
   }
 
-  private lateinit var locationData: LocationData
   private lateinit var appDatabase: AppDatabase
   private lateinit var countryAdapter: CountryAdapter
   private lateinit var linearLayoutManager: LinearLayoutManager
@@ -50,38 +49,12 @@ class MainActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
-    locationData = LocationData(this)
 
 
     linearLayoutManager = LinearLayoutManager(this)
 
     appDatabase = AppDatabase.getDatabase(this)
-
-    val now = Calendar.getInstance()
-
-    val hour = now.get(Calendar.HOUR_OF_DAY) // Get hour in 24 hour format
-    val minute = now.get(Calendar.MINUTE)
-
-    val date = Utils.parseDate(hour.toString() + ":" + minute)
-    val dateCompare = Utils.parseDate("18:00")
-
-    if (dateCompare.before(date)) {
-      main_views.setBackgroundColor(Color.parseColor("#06245F"))
-      statusColor("#06245F")
-    } else {
-      main_views.setBackgroundColor(Color.parseColor("#06CDFF"))
-      statusColor("#06CDFF")
-    }
-
-    val locationObserver = Observer<Location> {
-      val weather = RestClient.getService()
-          .getWeatherForLocation(it?.latitude, it?.longitude)
-      weather.enqueue(success = {
-        Log.e("current", it.body().toString())
-      }, failure = {
-        Log.e("error", it.message)
-      })
-    }
+    checkDayAndNight()
 
 
 
@@ -90,12 +63,6 @@ class MainActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     country_list.layoutManager = linearLayoutManager
     country_input.editText?.onChange {
       getAllCountry(it)
-    }
-
-    askPermissions(Manifest.permission.ACCESS_FINE_LOCATION) {
-      onGranted {
-        locationData.observe(this@MainActivity, locationObserver)
-      }
     }
 
   }
@@ -107,6 +74,22 @@ class MainActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
       window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
       window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
       window.statusBarColor = Color.parseColor(color)
+    }
+  }
+
+  private fun checkDayAndNight() {
+    val now = Calendar.getInstance()
+    val hour = now.get(Calendar.HOUR_OF_DAY) // Get hour in 24 hour format
+    val minute = now.get(Calendar.MINUTE)
+    val date = Utils.parseDate(hour.toString() + ":" + minute)
+    val dateCompare = Utils.parseDate("18:00")
+
+    if (dateCompare.before(date)) {
+      main_views.setBackgroundColor(Color.parseColor("#06245F"))
+      statusColor("#06245F")
+    } else {
+      main_views.setBackgroundColor(Color.parseColor("#06CDFF"))
+      statusColor("#06CDFF")
     }
   }
 
