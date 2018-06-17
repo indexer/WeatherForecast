@@ -22,6 +22,9 @@ interface WeatherDao {
   @Query("SELECT id FROM weather ORDER BY saving_date")
   fun getAllCityId(): IntArray
 
+  @Query("SELECT * FROM weather WHERE id= :id")
+  fun getAllWeatherById(id: Int): SaveWeather
+
   @Delete
   fun deleteSaveWeather(user: SaveWeather?)
 

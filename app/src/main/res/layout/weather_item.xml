@@ -5,6 +5,8 @@
     android:layout_height="match_parent">
 
     <ImageView
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
         android:id="@+id/weather_icon"
         android:layout_width="80dp"
         android:layout_height="80dp"

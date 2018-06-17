@@ -10,7 +10,6 @@ import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.WindowManager
@@ -28,12 +27,12 @@ import com.indexer.weather.job.FetchApiWorker
 import com.indexer.weather.model.SaveWeather
 import com.indexer.weather.viewmodel.HomeGridViewModel
 import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.activity_main.main_views
 import java.util.Calendar
 import java.util.concurrent.TimeUnit.MINUTES
 import com.brouding.simpledialog.SimpleDialog
 import com.indexer.ottohub.rest.RestClient
 import com.indexer.ottohub.rest.enqueue
+import com.indexer.weather.adapter.SpacesItemDecoration
 import com.indexer.weather.viewmodel.LocationData
 import com.sembozdemir.permissionskt.askPermissions
 
@@ -109,14 +108,14 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
       val weather = RestClient.getService()
           .getWeatherForLocation(it?.latitude, it?.longitude)
       weather.enqueue(success = {
-        forecast.visibility = View.VISIBLE
-        mywidget.visibility = View.VISIBLE
-        var weatherInformation =
+        forecast?.visibility = View.VISIBLE
+        mywidget?.visibility = View.VISIBLE
+        val weatherInformation =
           "Weather Station : ${it.body()?.name} Weather Condition : " +
               "${it.body()?.weather!![0].description} Temperature : " + Utils.formatTemperature(
               it.body()?.main?.temp
           )
-        mywidget.text = weatherInformation
+        mywidget?.text = weatherInformation
       }, failure = {
 
       })
@@ -132,19 +131,23 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     weatherAdapter = WeatherAdapter(this)
     gridLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     appDatabase = AppDatabase.getDatabase(this)
-    changeGridData()
 
     val countryCode = intent.getStringExtra(Config.country)
-    if (countryCode != null) {
-      homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
-    } else {
+
+    val list = appDatabase.weatherDao.getAllSaveWeather()
+    if (list.value == null && countryCode == null) {
       val intent = Intent(this@HomeActivity, MainActivity::class.java)
       startActivity(intent)
       this.finish()
+    } else {
+      if (countryCode != null) {
+        homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
+      }
     }
-
+    changeGridData()
     country_weather.layoutManager = gridLayoutManager
     country_weather.adapter = weatherAdapter
+    country_weather.addItemDecoration(SpacesItemDecoration(16))
     queueNetWork()
   }
 
@@ -167,6 +170,7 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
         .putIntArray(Config.city_list, idList)
         .build()
 
+    //TODO interval need to change to 15Minutes 1 minutes is just for requirements
     val recurringWork: PeriodicWorkRequest =
       PeriodicWorkRequest.Builder(FetchApiWorker().javaClass, 1, MINUTES)
           .setConstraints(constraints)
