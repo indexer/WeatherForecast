@@ -37,6 +37,7 @@ class HomeGridViewModel(application: Application) : AndroidViewModel(application
           .getWeatherForCountry(countryCode)
     getWetherByCountryCode.enqueue(success = {
       if (it.isSuccessful) {
+        Log.e("Current", "" + it.body().toString())
         val weather = SaveWeather(
             it.body()?.id,
             countryCode, it.body()?.weather?.get(0)?.main,

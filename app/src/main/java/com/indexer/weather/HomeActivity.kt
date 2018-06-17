@@ -109,8 +109,11 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
       val weather = RestClient.getService()
           .getWeatherForLocation(it?.latitude, it?.longitude)
       weather.enqueue(success = {
+        forecast.visibility = View.VISIBLE
+        mywidget.visibility = View.VISIBLE
         var weatherInformation =
-          "Weather Station" + it.body()?.name + it.body()?.weather!![0].main + "Temperature : " + Utils.formatTemperature(
+          "Weather Station : ${it.body()?.name} Weather Condition : " +
+              "${it.body()?.weather!![0].description} Temperature : " + Utils.formatTemperature(
               it.body()?.main?.temp
           )
         mywidget.text = weatherInformation
@@ -123,26 +126,23 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
       onGranted {
         locationData.observe(this@HomeActivity, locationObserver)
       }
-      onDenied {
-        forecast.visibility = View.GONE
-        mywidget.visibility = View.GONE
-      }
+
     }
 
     weatherAdapter = WeatherAdapter(this)
     gridLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     appDatabase = AppDatabase.getDatabase(this)
     changeGridData()
-    if (weatherAdapter.items?.size!! < 0) {
+
+    val countryCode = intent.getStringExtra(Config.country)
+    if (countryCode != null) {
+      homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
+    } else {
       val intent = Intent(this@HomeActivity, MainActivity::class.java)
       startActivity(intent)
       this.finish()
-    } else {
-      val countryCode = intent.getStringExtra(Config.country)
-      if (countryCode != null) {
-        homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
-      }
     }
+
     country_weather.layoutManager = gridLayoutManager
     country_weather.adapter = weatherAdapter
     queueNetWork()

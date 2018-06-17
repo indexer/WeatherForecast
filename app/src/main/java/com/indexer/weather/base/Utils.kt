@@ -16,8 +16,10 @@ object Utils {
     val c = "°C"
     val f = (temperature!! - 273) * 9 / 5 + 32
     val degrees = temperature - 273.16
-    val formatted = String.format(Locale.ENGLISH, "%.2f%S", f, s) + "/" +
-        String.format(Locale.ENGLISH, "%.2f%S", degrees, c)
+    val formatted = String.format(Locale.ENGLISH, "%.2f%S", degrees, c) + "/" + String.format(
+        Locale.ENGLISH, "%.2f%S", f, s
+    )
+
     return formatted
   }
 
