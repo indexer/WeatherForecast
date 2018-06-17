@@ -18,8 +18,8 @@ class NotificationHelper(private val mContext: Context) {
 
   @SuppressLint("ObsoleteSdkInt")
       /**
-   * Create and push the notification
-   */
+       * Create and push the notification
+       */
   fun createNotification(
     title: String,
     message: String

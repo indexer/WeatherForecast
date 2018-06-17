@@ -8,12 +8,12 @@ import com.indexer.weather.model.Country
 
 @Dao
 interface CountryDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllCountry(products: List<Country>)
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  fun insertAllCountry(products: List<Country>)
 
-    @Query("SELECT * FROM country WHERE name LIKE  :countryName")
-    fun findByCountryName(countryName: String): List<Country>
+  @Query("SELECT * FROM country WHERE name LIKE  :countryName")
+  fun findByCountryName(countryName: String): List<Country>
 
-    @Query("SELECT * FROM country")
-    fun findByCountry(): List<Country>
+  @Query("SELECT * FROM country")
+  fun findByCountry(): List<Country>
 }

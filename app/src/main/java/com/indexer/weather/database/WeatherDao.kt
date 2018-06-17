@@ -13,8 +13,14 @@ interface WeatherDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   fun insertWeather(saveWeather: SaveWeather)
 
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  fun insertWeathers(saveWeather: List<SaveWeather>)
+
   @Query("SELECT * FROM weather ORDER BY saving_date")
   fun getAllSaveWeather(): LiveData<MutableList<SaveWeather>>
+
+  @Query("SELECT id FROM weather ORDER BY saving_date")
+  fun getAllCityId(): IntArray
 
   @Delete
   fun deleteSaveWeather(user: SaveWeather?)

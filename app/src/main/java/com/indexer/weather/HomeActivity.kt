@@ -1,13 +1,13 @@
 package com.indexer.weather
 
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
@@ -41,16 +41,8 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     homeGridViewModel = ViewModelProviders.of(this)
         .get(HomeGridViewModel::class.java)
 
-    val constraints = Constraints.Builder()
-        .setRequiredNetworkType(NetworkType.CONNECTED)
-        .build()
-    val recurringWork: PeriodicWorkRequest =
-      PeriodicWorkRequest.Builder(FetchApiWorker::class.java, 1, MINUTES)
-          .setConstraints(constraints)
-          .build()
 
-    WorkManager.getInstance()
-        .enqueue(recurringWork)
+
 
 
     add_country.setOnClickListener {
@@ -75,6 +67,7 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     country_weather.layoutManager = gridLayoutManager
     country_weather.adapter = weatherAdapter
     changeGridData()
+    queueNetWork()
   }
 
   private fun dashBoradView(saveWeather: SaveWeather?) {
@@ -83,6 +76,27 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     weather_condition.text = saveWeather?.main
     temp_condition.text = Utils.formatTemperature(saveWeather?.temp)
     weather_icon.setImageResource(Utils.icon(saveWeather?.main))
+  }
+
+  private fun queueNetWork() {
+
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
+
+    val idList = appDatabase.weatherDao.getAllCityId()
+    val myData = Data.Builder()
+        .putIntArray("city_list", idList)
+        .build()
+
+    val recurringWork: PeriodicWorkRequest =
+      PeriodicWorkRequest.Builder(FetchApiWorker().javaClass, 1, MINUTES)
+          .setConstraints(constraints)
+          .setInputData(myData)
+          .build()
+
+    WorkManager.getInstance()
+        .enqueue(recurringWork)
   }
 
   private fun changeGridData() {
