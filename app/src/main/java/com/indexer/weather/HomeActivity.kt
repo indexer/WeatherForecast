@@ -73,18 +73,7 @@ class HomeActivity : AppCompatActivity(),
       mSnackBar!!.show()
       weather_icon.visibility = View.GONE
     } else {
-      val countryCode = intent.getStringExtra(Config.country)
 
-      val list = appDatabase.weatherDao.getAllSaveWeather()
-      if (list.value == null && countryCode == null) {
-        val intent = Intent(this@HomeActivity, MainActivity::class.java)
-        startActivity(intent)
-        this.finish()
-      } else {
-        if (countryCode != null) {
-          homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
-        }
-      }
       changeGridData()
       country_weather.layoutManager = gridLayoutManager
       country_weather.adapter = weatherAdapter
@@ -107,12 +96,12 @@ class HomeActivity : AppCompatActivity(),
         .get(HomeGridViewModel::class.java)
 
 
-
     add_country.setOnClickListener {
       val intent = Intent(this@HomeActivity, MainActivity::class.java)
       startActivity(intent)
-      this.finish()
     }
+
+    mywidget?.isSelected = true
 
     main_view.setOnLongClickListener {
       if (weatherAdapter.itemCount > 0) {
@@ -165,11 +154,22 @@ class HomeActivity : AppCompatActivity(),
     weatherAdapter = WeatherAdapter(this)
     gridLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     appDatabase = AppDatabase.getDatabase(this)
+    val countryCode = intent.getStringExtra(Config.country)
 
-    registerReceiver(
-        ConnectivityReceiver(),
-        IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-    )
+    val list = appDatabase.weatherDao.getAllSaveWeather()
+    if (list.value == null && countryCode == null) {
+      val intent = Intent(this@HomeActivity, MainActivity::class.java)
+      startActivity(intent)
+      this.finish()
+    } else {
+      if (countryCode != null) {
+        homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
+      }
+    }
+    changeGridData()
+
+
+    registerReceiver(ConnectivityReceiver(), IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
 
   }
 
@@ -228,11 +228,12 @@ class HomeActivity : AppCompatActivity(),
 
 
     if (date.after(dateCompareTwo) || date.before(dateCompare)) {
-      main_view.setBackgroundColor(Color.parseColor("#06245F"))
-      statusColor("#06245F")
-    } else {
       main_view.setBackgroundColor(Color.parseColor("#06CDFF"))
       statusColor("#06CDFF")
+    } else {
+      main_view.setBackgroundColor(Color.parseColor("#06245F"))
+      statusColor("#06245F")
+
     }
   }
 
