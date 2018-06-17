@@ -4,11 +4,11 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
-import android.icu.util.TimeUnit
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
-import androidx.work.OneTimeWorkRequest
+import androidx.work.Constraints
+import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import com.indexer.weather.adapter.WeatherAdapter
@@ -16,7 +16,7 @@ import com.indexer.weather.base.BaseViewHolder
 import com.indexer.weather.base.Config
 import com.indexer.weather.base.Utils
 import com.indexer.weather.database.AppDatabase
-import com.indexer.weather.job.SampleWorker
+import com.indexer.weather.job.FetchApiWorker
 import com.indexer.weather.model.SaveWeather
 import com.indexer.weather.viewmodel.HomeGridViewModel
 import kotlinx.android.synthetic.main.activity_home.*
@@ -41,8 +41,12 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     homeGridViewModel = ViewModelProviders.of(this)
         .get(HomeGridViewModel::class.java)
 
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
     val recurringWork: PeriodicWorkRequest =
-      PeriodicWorkRequest.Builder(SampleWorker::class.java, 1, MINUTES)
+      PeriodicWorkRequest.Builder(FetchApiWorker::class.java, 1, MINUTES)
+          .setConstraints(constraints)
           .build()
 
     WorkManager.getInstance()
