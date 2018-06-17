@@ -40,6 +40,7 @@ import com.indexer.weather.adapter.SpacesItemDecoration
 import com.indexer.weather.listener.ConnectivityReceiver
 import com.indexer.weather.viewmodel.LocationData
 import com.sembozdemir.permissionskt.askPermissions
+import kotlinx.android.synthetic.main.activity_main.main_views
 
 class HomeActivity : AppCompatActivity(),
     BaseViewHolder.OnItemClickListener,
@@ -129,22 +130,7 @@ class HomeActivity : AppCompatActivity(),
       true
     }
 
-    val now = Calendar.getInstance()
-
-    val hour = now.get(Calendar.HOUR_OF_DAY) // Get hour in 24 hour format
-    val minute = now.get(Calendar.MINUTE)
-    mywidget?.isSelected = true
-
-    val date = Utils.parseDate(hour.toString() + ":" + minute)
-    val dateCompare = Utils.parseDate("19:00")
-
-    if (dateCompare.before(date)) {
-      main_view.setBackgroundColor(Color.parseColor("#06245F"))
-      statusColor("#06245F")
-    } else {
-      main_view.setBackgroundColor(Color.parseColor("#06CDFF"))
-      statusColor("#06CDFF")
-    }
+    checkDayAndNight()
 
     val locationObserver = Observer<Location> {
       val weather = RestClient.getService()
@@ -223,6 +209,24 @@ class HomeActivity : AppCompatActivity(),
       window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
       window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
       window.statusBarColor = Color.parseColor(color)
+    }
+  }
+
+  private fun checkDayAndNight() {
+    val now = Calendar.getInstance()
+    val hour = now.get(Calendar.HOUR_OF_DAY) // Get hour in 24 hour format
+    val minute = now.get(Calendar.MINUTE)
+    val date = Utils.parseDate(hour.toString() + ":" + minute)
+    val dateCompare = Utils.parseDate("18:00 PM")
+    val dateCompareTwo = Utils.parseDate("07:00 AM")
+
+
+    if (date.after(dateCompareTwo) || date.before(dateCompare)) {
+      main_view.setBackgroundColor(Color.parseColor("#06245F"))
+      statusColor("#06245F")
+    } else {
+      main_view.setBackgroundColor(Color.parseColor("#06CDFF"))
+      statusColor("#06CDFF")
     }
   }
 

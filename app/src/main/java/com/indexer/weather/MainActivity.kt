@@ -15,6 +15,7 @@ import com.indexer.weather.base.Config
 import com.indexer.weather.base.Utils
 import com.indexer.weather.database.AppDatabase
 import com.indexer.weather.utils.onChange
+import kotlinx.android.synthetic.main.activity_main.close_country
 import kotlinx.android.synthetic.main.activity_main.country_input
 import kotlinx.android.synthetic.main.activity_main.country_list
 import kotlinx.android.synthetic.main.activity_main.main_views
@@ -51,7 +52,9 @@ class MainActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
     appDatabase = AppDatabase.getDatabase(this)
     checkDayAndNight()
 
-
+    close_country.setOnClickListener {
+      this.finish()
+    }
 
     countryAdapter = CountryAdapter(this)
     country_list.adapter = countryAdapter
