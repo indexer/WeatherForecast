@@ -1,11 +1,15 @@
 package com.indexer.weather
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
+import android.view.WindowManager
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.NetworkType
@@ -20,6 +24,8 @@ import com.indexer.weather.job.FetchApiWorker
 import com.indexer.weather.model.SaveWeather
 import com.indexer.weather.viewmodel.HomeGridViewModel
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.android.synthetic.main.activity_main.main_views
+import java.util.Calendar
 import java.util.concurrent.TimeUnit.MINUTES
 
 class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
@@ -43,8 +49,6 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
 
 
 
-
-
     add_country.setOnClickListener {
       val intent = Intent(this@HomeActivity, MainActivity::class.java)
       startActivity(intent)
@@ -59,14 +63,38 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
       true
     }
 
+    val now = Calendar.getInstance()
+
+    val hour = now.get(Calendar.HOUR_OF_DAY) // Get hour in 24 hour format
+    val minute = now.get(Calendar.MINUTE)
+
+    val date = Utils.parseDate(hour.toString() + ":" + minute)
+    val dateCompare = Utils.parseDate("18:00")
+
+    if (dateCompare.before(date)) {
+      main_view.setBackgroundColor(Color.parseColor("#06245F"))
+      statusColor("#06245F")
+    } else {
+      main_view.setBackgroundColor(Color.parseColor("#06CDFF"))
+      statusColor("#06CDFF")
+    }
+
     weatherAdapter = WeatherAdapter(this)
     gridLayoutManager = GridLayoutManager(this, 3)
     appDatabase = AppDatabase.getDatabase(this)
-    val countryCode = intent.getStringExtra(Config.country)
-    homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
+    changeGridData()
+    if (weatherAdapter.items?.size!! < 0) {
+      val intent = Intent(this@HomeActivity, MainActivity::class.java)
+      startActivity(intent)
+      this.finish()
+    } else {
+      val countryCode = intent.getStringExtra(Config.country)
+      if (countryCode != null) {
+        homeGridViewModel.saveWeatherInformation(countryCode, appDatabase)
+      }
+    }
     country_weather.layoutManager = gridLayoutManager
     country_weather.adapter = weatherAdapter
-    changeGridData()
     queueNetWork()
   }
 
@@ -86,7 +114,7 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
 
     val idList = appDatabase.weatherDao.getAllCityId()
     val myData = Data.Builder()
-        .putIntArray("city_list", idList)
+        .putIntArray(Config.city_list, idList)
         .build()
 
     val recurringWork: PeriodicWorkRequest =
@@ -97,6 +125,16 @@ class HomeActivity : AppCompatActivity(), BaseViewHolder.OnItemClickListener {
 
     WorkManager.getInstance()
         .enqueue(recurringWork)
+  }
+
+  @SuppressLint("ObsoleteSdkInt")
+  private fun statusColor(color: String) {
+    if (Build.VERSION.SDK_INT >= 21) {
+      val window = window
+      window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+      window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+      window.statusBarColor = Color.parseColor(color)
+    }
   }
 
   private fun changeGridData() {

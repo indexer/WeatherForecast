@@ -3,6 +3,8 @@ package com.indexer.weather.base
 import android.content.Context
 
 import com.indexer.weather.R
+import java.text.SimpleDateFormat
+import java.util.Date
 
 import java.util.Locale
 
@@ -17,6 +19,17 @@ object Utils {
     val formatted = String.format(Locale.ENGLISH, "%.2f%S", f, s) + "/" +
         String.format(Locale.ENGLISH, "%.2f%S", degrees, c)
     return formatted
+  }
+
+  fun parseDate(date: String): Date {
+
+    val inputFormat = "HH:mm"
+    val inputParser = SimpleDateFormat(inputFormat, Locale.US)
+    return try {
+      inputParser.parse(date)
+    } catch (e: java.text.ParseException) {
+      Date(0)
+    }
   }
 
   fun icon(weather: String?): Int {

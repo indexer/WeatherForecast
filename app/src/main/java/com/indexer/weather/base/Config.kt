@@ -15,4 +15,5 @@ object Config {
     const val country="country"
     const val twocode="twocode"
     const val cioc ="cioc"
+    const val city_list="city_list"
 }
