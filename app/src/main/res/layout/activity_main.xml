@@ -37,6 +37,8 @@
 
   </android.support.design.widget.TextInputLayout>
 
+
+
   <android.support.v7.widget.RecyclerView
       android:id="@+id/country_list"
       android:layout_width="match_parent"

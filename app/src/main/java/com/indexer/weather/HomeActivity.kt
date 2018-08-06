@@ -153,7 +153,7 @@ class HomeActivity : AppCompatActivity(),
 
     weatherAdapter = WeatherAdapter(this)
     gridLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-    appDatabase = AppDatabase.getDatabase(this)
+    appDatabase = AppDatabase.getDatabase(this@HomeActivity)
     val countryCode = intent.getStringExtra(Config.country)
 
     val list = appDatabase.weatherDao.getAllSaveWeather()
